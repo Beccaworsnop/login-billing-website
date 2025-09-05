@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  phone        String?
+  createdAt    DateTime @default(now())
+
+  // Relations
+  transactions          Transaction[]
+  paymentMethods        PaymentMethod[]
+  accountVerifications  AccountVerification[]
+  activityLogs         ActivityLog[]
+  accountSettings      AccountSetting[]
+  notifications        Notification[]
+
+  @@map("users")
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  methodId  String
+  amount    Float    // Changed from Decimal to Float for SQLite
+  status    String   // pending, completed, failed, cancelled
+  createdAt DateTime @default(now())
+  userId    String
+
+  // Relations
+  user          User          @relation(fields: [userId], references: [id])
+  paymentMethod PaymentMethod @relation(fields: [methodId], references: [id])
+
+  @@map("transactions")
+}
+
+model PaymentMethod {
+  id         String   @id @default(cuid())
+  type       String   // credit_card, debit_card, bank_account, etc.
+  provider   String   // visa, mastercard, paypal, etc.
+  last4Digits String
+  isActive   Boolean  @default(true)
+  addedAt    DateTime @default(now())
+  userId     String
+
+  // Relations
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+
+  @@map("payment_methods")
+}
+
+model AccountVerification {
+  id            String   @id @default(cuid())
+  emailVerified Boolean  @default(false)
+  phoneVerified Boolean  @default(false)
+  idVerified    Boolean  @default(false)
+  updatedAt     DateTime @updatedAt
+  userId        String
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("account_verifications")
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String   // login, transaction, payment_added, etc.
+  details   String?  // JSON string with additional info
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("activity_logs")
+}
+
+model AccountSetting {
+  id                    String  @id @default(cuid())
+  userId                String  @unique
+  dailyLimit            Float   // Changed from Decimal to Float for SQLite
+  monthlyLimit          Float   // Changed from Decimal to Float for SQLite
+  maxSingleTransaction  Float   // Changed from Decimal to Float for SQLite
+  paymentMethodLimit    Int     @default(5)
+  privacySettings       String  // JSON string
+  dataRetention         String
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("account_settings")
+}
+
+model Notification {
+  id                        String   @id @default(cuid())
+  userId                    String
+  twoFactorEnabled          Boolean  @default(false)
+  passwordChangeAlerts      Boolean  @default(true)
+  marketingEmails           Boolean  @default(false)
+  transactionConfirmations  Boolean  @default(true)
+  suspiciousActivityAlerts  Boolean  @default(true)
+  updatedAt                 DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
