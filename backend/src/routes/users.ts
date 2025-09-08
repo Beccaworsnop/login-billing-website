@@ -55,7 +55,7 @@ router.post('/', async (req: Request, res: Response) => {
 }
 });
 
-// GET /api/users/:id - Get user by ID
+
 router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
