@@ -4,16 +4,16 @@ import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/jwt';
 import { validateRegistration, validateLogin } from '../middleware/validation';
 import { requireAuth } from '../middleware/auth';
+import { sendWelcomeEmail } from '../utils/emails';
+
 
 const router = express.Router();
 const prisma = new PrismaClient();
-
 
 router.post('/register', validateRegistration, async (req: Request, res: Response) => {
   try {
     const { name, email, password, phone } = req.body;
 
- 
     const existingUser = await prisma.user.findUnique({
       where: { email }
     });
@@ -22,10 +22,10 @@ router.post('/register', validateRegistration, async (req: Request, res: Respons
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
-   
+    // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
-   
+    // Create user
     const user = await prisma.user.create({
       data: {
         name,
@@ -42,10 +42,13 @@ router.post('/register', validateRegistration, async (req: Request, res: Respons
       }
     });
 
-  
     const token = generateToken({
       userId: user.id,
       email: user.email
+    });
+
+    sendWelcomeEmail(user.email, user.name).catch(error => {
+      console.error('Failed to send welcome email:', error);
     });
 
     res.status(201).json({ 
@@ -63,7 +66,6 @@ router.post('/login', validateLogin, async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    
     const user = await prisma.user.findUnique({
       where: { email }
     });
@@ -72,20 +74,17 @@ router.post('/login', validateLogin, async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    
     const isValidPassword = await bcrypt.compare(password, user.passwordHash);
     
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-   
     const token = generateToken({
       userId: user.id,
       email: user.email
     });
 
-  
     await prisma.activityLog.create({
       data: {
         userId: user.id,
