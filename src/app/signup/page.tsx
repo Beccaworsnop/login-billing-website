@@ -1,7 +1,69 @@
-import Link from "next/link"
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from "next/link";
+import { useAuth } from '../contexts/authContext';
 
 export default function SignupPage() {
-  
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phone: '',
+  });
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { register, isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, router]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await register({
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone || undefined,
+      });
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Registration failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
@@ -14,7 +76,13 @@ export default function SignupPage() {
         </div>
 
         <div className="bg-card/10 backdrop-blur-sm p-8 rounded-lg border border-border/20">
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                {error}
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="firstName" className="block text-white/80 text-sm font-medium mb-2">
@@ -24,6 +92,8 @@ export default function SignupPage() {
                   type="text"
                   id="firstName"
                   name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
                   required
                   className="w-full bg-input border border-border rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
                   placeholder="John"
@@ -37,6 +107,8 @@ export default function SignupPage() {
                   type="text"
                   id="lastName"
                   name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
                   required
                   className="w-full bg-input border border-border rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
                   placeholder="Doe"
@@ -52,9 +124,26 @@ export default function SignupPage() {
                 type="email"
                 id="email"
                 name="email"
+                value={formData.email}
+                onChange={handleChange}
                 required
                 className="w-full bg-input border border-border rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
                 placeholder="john@example.com"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="phone" className="block text-white/80 text-sm font-medium mb-2">
+                Phone Number (Optional)
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className="w-full bg-input border border-border rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+                placeholder="Enter your phone number"
               />
             </div>
 
@@ -66,6 +155,8 @@ export default function SignupPage() {
                 type="password"
                 id="password"
                 name="password"
+                value={formData.password}
+                onChange={handleChange}
                 required
                 className="w-full bg-input border border-border rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
                 placeholder="Create a strong password"
@@ -81,6 +172,8 @@ export default function SignupPage() {
                 type="password"
                 id="confirmPassword"
                 name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
                 required
                 className="w-full bg-input border border-border rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
                 placeholder="Confirm your password"
@@ -121,9 +214,10 @@ export default function SignupPage() {
 
             <button
               type="submit"
-              className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+              disabled={isLoading}
+              className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create Account
+              {isLoading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 

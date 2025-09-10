@@ -10,6 +10,7 @@ import { sendWelcomeEmail } from '../utils/emails';
 const router = express.Router();
 const prisma = new PrismaClient();
 
+
 router.post('/register', validateRegistration, async (req: Request, res: Response) => {
   try {
     const { name, email, password, phone } = req.body;
@@ -149,5 +150,6 @@ router.post('/logout', requireAuth, async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to logout' });
   }
 });
+
 
 export default router;
