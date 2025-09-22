@@ -1,37 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+A secure third-party billing solution that provides user authentication, payment processing, transactions, and settings management.
 
-## Getting Started
+🚀 Features
+🔐 Authentication & Users
 
-First, run the development server:
+Secure JWT authentication (register, login, logout).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Passwords hashed with bcrypt.
 
-```
+User profile management (update details, view profile).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Welcome emails sent via SendGrid.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+💸 Transactions
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create and process new payments.
 
-## Learn More
+Cancel pending transactions.
 
-To learn more about Next.js, take a look at the following resources:
+Transaction history with pagination and filters.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Statistics and insights endpoints.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+💳 Payment Methods
 
-## Deploy on Vercel
+Add/remove multiple payment methods.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Supports provider, type, and last 4 digits tracking.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Active/inactive status handling.
+
+⚙️ Settings
+
+Configurable limits (daily, monthly, single transaction, payment methods).
+
+Privacy and retention settings.
+
+Update or fetch limits separately.
+
+📧 Emails
+
+SendGrid integration with test connection route.
+
+Automatic welcome email on signup.
