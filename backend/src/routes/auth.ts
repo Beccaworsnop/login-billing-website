@@ -4,12 +4,10 @@ import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/jwt';
 import { validateRegistration, validateLogin } from '../middleware/validation';
 import { requireAuth } from '../middleware/auth';
-import { sendWelcomeEmail } from '../utils/emails';
-
+// ❌ REMOVE THIS LINE: import { sendWelcomeEmail } from '../utils/emails';
 
 const router = express.Router();
 const prisma = new PrismaClient();
-
 
 router.post('/register', validateRegistration, async (req: Request, res: Response) => {
   try {
@@ -23,10 +21,8 @@ router.post('/register', validateRegistration, async (req: Request, res: Respons
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
-    // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Create user
     const user = await prisma.user.create({
       data: {
         name,
@@ -48,9 +44,10 @@ router.post('/register', validateRegistration, async (req: Request, res: Respons
       email: user.email
     });
 
-    sendWelcomeEmail(user.email, user.name).catch(error => {
-      console.error('Failed to send welcome email:', error);
-    });
+    // ❌ REMOVE THESE LINES:
+    // sendWelcomeEmail(user.email, user.name).catch(error => {
+    //   console.error('Failed to send welcome email:', error);
+    // });
 
     res.status(201).json({ 
       message: 'User created successfully',
@@ -150,6 +147,5 @@ router.post('/logout', requireAuth, async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to logout' });
   }
 });
-
 
 export default router;
